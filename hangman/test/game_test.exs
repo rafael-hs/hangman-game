@@ -55,5 +55,80 @@ defmodule GameTest do
     {game, _tally} = Game.make_move(game, "e")
     assert game.game_state == :won
     assert game.turns_left == 7
+
+    # second implementation
+
+    # setup
+    moves = [
+      {"w", :good_guess},
+      {"i", :good_guess},
+      {"b", :good_guess},
+      {"l", :good_guess},
+      {"e", :won}
+    ]
+
+    game = Game.new_game("wibble")
+
+    Enum.reduce(moves, game, fn {guess, state}, new_game ->
+      {new_game, _} = Game.make_move(new_game, guess)
+      assert new_game.game_state == state
+      new_game
+    end)
+  end
+
+  test "bad guess is recognized" do
+    game = Game.new_game("wibble")
+    {game, _tally} = Game.make_move(game, "x")
+    assert game.game_state == :bad_guess
+    assert game.turns_left == 6
+  end
+
+  test "lost game is recognized" do
+    game = Game.new_game("w")
+    {game, _tally} = Game.make_move(game, "a")
+    assert game.game_state == :bad_guess
+    assert game.turns_left == 6
+    {game, _tally} = Game.make_move(game, "b")
+    assert game.game_state == :bad_guess
+    assert game.turns_left == 5
+    {game, _tally} = Game.make_move(game, "c")
+    assert game.game_state == :bad_guess
+    assert game.turns_left == 4
+    {game, _tally} = Game.make_move(game, "d")
+    assert game.game_state == :bad_guess
+    assert game.turns_left == 3
+    {game, _tally} = Game.make_move(game, "e")
+    assert game.game_state == :bad_guess
+    assert game.turns_left == 2
+    {game, _tally} = Game.make_move(game, "f")
+    assert game.game_state == :bad_guess
+    assert game.turns_left == 1
+    {game, _tally} = Game.make_move(game, "g")
+    assert game.game_state == :lost
+
+    # second implementation
+    # setup
+    moves = [
+      {"a", :bad_guess, 6},
+      {"b", :bad_guess, 5},
+      {"c", :bad_guess, 4},
+      {"d", :bad_guess, 3},
+      {"e", :bad_guess, 2},
+      {"f", :bad_guess, 1},
+      {"g", :lost, 0}
+    ]
+
+    # act
+    game = Game.new_game("w")
+
+    # assert
+    moves
+    |> Enum.reduce(game, fn
+      {guess, state, turns_left}, new_game ->
+        {new_game, _tally} = Game.make_move(new_game, guess)
+        assert new_game.game_state == state
+        assert new_game.turns_left == turns_left
+        new_game
+    end)
   end
 end
